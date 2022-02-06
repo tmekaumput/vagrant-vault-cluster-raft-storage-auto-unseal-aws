@@ -3,13 +3,14 @@ set -x
 
 NODE_ID="$1"
 ADDRESS="$2"
-KMS_KEY_ID="$3"
+KEY_NAME="$3"
 LEADER_NODE_ID="$4"
 LEADER_API_ADDRESS="$5"
 
-AWS_REGION="$6"
-AWS_ACCESS_KEY="$7"
-AWS_SECRET_KEY="$8"
+CLIENT_ID=$6
+CLIENT_SECRET=$7
+TENANT_ID=$8
+VAULT_NAME=$9
 DATA_DIR="/var/shared/data/raft-vault"
 
 export NODE_ID DATA_DIR ADDRESS LEADER_NODE_ID LEADER_API_ADDRESS
@@ -32,11 +33,12 @@ function config_cluster_leader_node {
     cluster_address = "${ADDRESS}:8201"
     tls_disable = 1
   }
-  seal "awskms" {
-    region     = "${AWS_REGION}"
-    access_key = "${AWS_ACCESS_KEY}"
-    secret_key = "${AWS_SECRET_KEY}"
-    kms_key_id = "${KMS_KEY_ID}"
+  seal "azurekeyvault" {
+    client_id      = "${CLIENT_ID}"
+    client_secret  = "${CLIENT_SECRET}"
+    tenant_id      = "${TENANT_ID}"
+    vault_name     = "${VAULT_NAME}"
+    key_name       = "${KEY_NAME}"
   }
   ui=true
   disable_mlock = true
@@ -69,11 +71,12 @@ function config_cluster_follower_node {
     cluster_address = "${ADDRESS}:8201"
     tls_disable = 1
   }
-  seal "awskms" {
-    region     = "${AWS_REGION}"
-    access_key = "${AWS_ACCESS_KEY}"
-    secret_key = "${AWS_SECRET_KEY}"
-    kms_key_id = "${KMS_KEY_ID}"
+  seal "azurekeyvault" {
+    client_id      = "${CLIENT_ID}"
+    client_secret  = "${CLIENT_SECRET}"
+    tenant_id      = "${TENANT_ID}"
+    vault_name     = "${VAULT_NAME}"
+    key_name       = "${KEY_NAME}"
   }
   ui=true
   disable_mlock = true
