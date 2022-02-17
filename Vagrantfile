@@ -5,11 +5,10 @@ GID=1001
 UID=1001
 
 shared_dir="/var/shared"
-client_id=ENV['CLIENT_ID']
-client_secret=ENV['CLIENT_SECRET']
-tenant_id=ENV['TENANT_ID']
-vault_name=ENV['VAULT_NAME']
-key_name=ENV['KEY_NAME']
+kms_key_id=ENV['KMS_KEY_ID']
+aws_region=ENV['AWS_REGION']
+aws_access_key_id=ENV['AWS_ACCESS_KEY_ID']
+aws_secret_access_key=ENV['AWS_SECRET_ACCESS_KEY']
 
 leader_node = {
   :id => "leader_node",
@@ -52,7 +51,7 @@ Vagrant.configure("2") do |config|
     vault_leader.vm.provision "shell", path: "scripts/common.sh"
     vault_leader.vm.provision "shell", path: "scripts/install-vault.sh", args: leader_node[:ip]
     vault_leader.vm.provision "shell", path: "scripts/create-systemd-unit.sh"
-    vault_leader.vm.provision "shell", path: "scripts/create-configs.sh", args: [leader_node[:id], leader_node[:ip], key_name, leader_node[:id], leader_node[:api_addr], client_id, client_secret, tenant_id, vault_name] 
+    vault_leader.vm.provision "shell", path: "scripts/create-configs.sh", args: [leader_node[:id], leader_node[:ip], kms_key_id, leader_node[:id], leader_node[:api_addr], aws_region, aws_access_key_id, aws_secret_access_key]
 
     vault_leader.vm.provision "shell", inline: "sudo systemctl enable vault.service"
     vault_leader.vm.provision "shell", inline: "sudo systemctl start vault"
@@ -71,8 +70,8 @@ Vagrant.configure("2") do |config|
       follower_node.vm.provision "file", source: "./license.txt", destination: "/tmp/license.txt"
       follower_node.vm.provision "shell", path: "scripts/common.sh"
       follower_node.vm.provision "shell", path: "scripts/install-vault.sh", args: follower[:ip]
+      follower_node.vm.provision "shell", path: "scripts/create-configs.sh", args: [follower[:id], follower[:ip], kms_key_id, leader_node[:id], leader_node[:api_addr], aws_region, aws_access_key_id, aws_secret_access_key]
       follower_node.vm.provision "shell", path: "scripts/create-systemd-unit.sh"
-      follower_node.vm.provision "shell", path: "scripts/create-configs.sh", args: [follower[:id], follower[:ip], key_name, leader_node[:id], leader_node[:api_addr], client_id, client_secret, tenant_id, vault_name]
       follower_node.vm.provision "shell", inline: "sudo systemctl enable vault.service"
       follower_node.vm.provision "shell", inline: "sudo systemctl start vault"
     end
